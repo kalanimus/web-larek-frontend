@@ -1,10 +1,3 @@
-import {Api} from "../components/base/api"
-
-enum paymentType {
-  "Онлайн",
-  "При получении"
-}
-
 export interface IProductItem
 {
   id: string;
@@ -15,56 +8,31 @@ export interface IProductItem
   price: number;
 }
 
-export interface IOrder 
-{
+export enum PaymentType {
+  "Онлайн",
+  "При получении"
+}
+
+export interface IOrder {
+  payment: PaymentType,
+  email: string,
+  phone: string,
+  address: string,
+  total: number,
+  items: string[]
+}
+
+export interface IOrderResponse {
   id: string;
   total: number;
 }
 
-export interface ICard
-{
-  product: IProductItem;
+export interface IPage {
+  gallery: IProductItem[];
+  cartTotal: number;  
 }
 
-export interface IGallery 
-{
-  cardList: ICard[];
-  addCard(card: ICard): void;
-  addCardList(cardList: ICard[]): void;
-  deleteCard(cardId: string): void;
-  render(): void;
-}
-
-export interface ICart
-{
-  productList: IProductItem[];
+export interface IShoppingCart {
+  products: IProductItem[];
   total: number;
-  addToCart(product: IProductItem): void;
-  deleteFromCart(product: IProductItem): void;
-  render(): void;
-}
-
-export interface IPayment
-{
-  paymentType: paymentType;
-  address: string;
-  email: string;
-  phone: string;
-  SubmitPayment(): IOrder;
-}
-
-export interface ModalManager
-{
-  openCardModel(cardId: string): void;
-  openBasketModal(): void;
-  openPaymentModal(): void;
-}
-
-export interface IApiClient
-{
-  api: Api;
-
-  getProduct(): IProductItem;
-  getProductList(): IProductItem[];
-  postOrder(order: IOrder): void;
 }
