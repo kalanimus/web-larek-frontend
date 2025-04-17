@@ -1,25 +1,32 @@
 import { IProductItem } from "../../types";
+import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 import { IEvents } from "../base/events";
 
-export class Card extends Component<IProductItem> {
+export class CardPreview extends Component<IProductItem> {
+  protected buyButton: HTMLButtonElement;
+
   protected cardImage: HTMLImageElement;
   protected cardTitle: HTMLElement;
   protected cardCategory: HTMLElement;
   protected cardPrice: HTMLElement;
+  protected cardDescription: HTMLElement;
   protected cardId: string;
 
-  constructor(container: HTMLButtonElement, protected events: IEvents){
+  constructor(container: HTMLElement, events: IEvents) {
     super(container);
-    this.cardImage = this.container.querySelector('.card__image') as HTMLImageElement;
+
+    this.buyButton = ensureElement('.card__button', this.container) as HTMLButtonElement;
+    this.cardImage = ensureElement('.card__image', this.container) as HTMLImageElement;
     this.cardTitle = this.container.querySelector('.card__title') as HTMLElement;
     this.cardCategory = this.container.querySelector('.card__category') as HTMLElement;
     this.cardPrice = this.container.querySelector('.card__price') as HTMLElement;
+    this.cardDescription = this.container.querySelector('.card__text') as HTMLElement;
 
-    this.container.addEventListener('click', (event) => {
-      this.events.emit('card:click', {id: this.cardId})
+    this.buyButton.addEventListener('click', () => {
+      events.emit('card:buy', {id: this.cardId});
     })
-  }
+  } 
 
   set id(value: string){
     this.cardId = value;
@@ -59,5 +66,18 @@ export class Card extends Component<IProductItem> {
       this.setText(this.cardPrice, `${value} синапсов`);
     else
       this.setText(this.cardPrice, 'Бесценно');
+  }
+
+  set description(value:string) {
+    this.setText(this.cardDescription, value);
+  }
+
+  toggleButton(value: boolean){
+    if(!value){
+      this.setText(this.buyButton, 'Купить');
+    } else {
+      this.setText(this.buyButton, 'Уже в корзине');
+    }
+    this.buyButton.disabled = value;
   }
 }

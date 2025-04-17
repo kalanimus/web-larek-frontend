@@ -2,7 +2,7 @@ import { IProductItem } from "../../types";
 import { IEvents } from "../base/events";
 
 export class CartModel {
-  protected products: IProductItem[] = [];
+  protected productList: IProductItem[] = [];
   protected total: number;
 
   constructor(protected events: IEvents){
@@ -10,19 +10,43 @@ export class CartModel {
   }
 
   addProduct(item: IProductItem) {
-    this.products.push(item);
+    this.productList.push(item);
     this.total += item.price;
+    this.events.emit('cart:updated');
   }
 
   removeProduct(id: string){
-    const index = this.products.findIndex(item => item.id === id);
+    const index = this.productList.findIndex(item => item.id === id);
     if(index !== -1){
-      this.products.splice(index, 1);
-      this.total -= this.products[index].price;
+      this.total -= this.productList[index].price;
+      this.productList.splice(index, 1);
     }
+    this.events.emit('cart:updated');
+  }
+
+  clearCart(){
+    this.productList = [];
+    this.total = 0;
+  }
+
+  isInCart(id: string): boolean{
+    return this.productList.find(item => item.id === id)? false: true;
+  }
+
+  getProducts(){
+    return this.productList;
+  }
+
+  getTotal(){
+    return this.total;
   }
 
   get count() {
-    return this.products.length;
+    return this.productList.length;
   }
+
+  validateCart(): boolean{
+    return this.total !== 0;
+  }
+  
 }

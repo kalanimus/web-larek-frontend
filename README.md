@@ -41,167 +41,158 @@ npm run build
 yarn build
 ```
 
-## Архитектура
+## Архитектура MVP
 
-```mermaid
-classDiagram
-    class IProductItem {
-        <<interface>>
-        +id: string
-        +description: string
-        +image: string
-        +title: string
-        +category: string
-        +price: number
-    }
+В проекте используется архитектурный подход MVP (Model-View-Presenter), обеспечивающий разделение обязанностей между компонентами:
 
-    class IOrder {
-        <<interface>>
-        +id: string
-        +total: number
-    }
+- **Model** отвечает за загрузку данных через API, их хранение и обработку пользовательских данных.
+- **View** занимается отображением интерфейса, взаимодействием с пользователем и передачей событий.
+- **EventEmitter** выполняет роль Presenter'а, координируя взаимодействие между Model и View: он обрабатывает события, обновляет данные и управляет отображением. В данном проекте этот слой не был выделен отдельно и реализован в основном файле скрипта.
 
-    class ICard {
-        <<interface>>
-        +product: IProductItem
-    }
+Такое разделение делает код более структурированным и поддерживаемым.
 
-    class IGallery {
-        <<interface>>
-        +cardList: ICard[]
-        +addCard(card: ICard): void
-        +addCardList(cardList: ICard[]): void
-        +deleteCard(cardId: string): void
-        +render(): void
-    }
+## Базовые классы
 
-    class ICart {
-        <<interface>>
-        +productList: IProductItem[]
-        +total: number
-        +addToCart(product: IProductItem): void
-        +deleteFromCart(product: IProductItem): void
-        +render(): void
-    }
+### Класс Api
 
-    class IPayment {
-        <<interface>>
-        +paymentType: string
-        +address: string
-        +email: string
-        +phone: string
-        +SubmitPayment(): IOrder
-    }
+**Методы:**
 
-    class ModalManager {
-        <<interface>>
-        +openCardModel(cardId: string): void
-        +openBasketModal(): void
-        +openPaymentModal(): void
-    }
+- `handleResponse` — обработчик ответа сервера
+- `get` — принимает изменяющуюся часть url-адреса, возвращает ответ от сервера
+- `post` — принимает изменяющуюся часть url-адреса и данные для отправки на сервер  
+- `type ApiPostMethods = 'POST' | 'PUT' | 'DELETE'` — тип метода POST, PUT, DELETE
 
-    class IApiClient {
-        <<interface>>
-        +api: Api
-        +getProduct(): IProductItem
-        +getProductList(): IProductItem[]
-        +postOrder(order: IOrder): void
-    }
+### Класс EventEmitter
 
-    ICard --> IProductItem
-    IGallery --> ICard
-    ICart --> IProductItem
-    IPayment --> IOrder
-    IApiClient --> IProductItem
-    IApiClient --> IOrder
-```
+Реализует паттерн «Observer/Наблюдатель» и обеспечивает работу событий. Позволяет устанавливать и снимать слушатели событий, вызывать обработчики при наступлении события.
 
-### Интерфейсы данных
-#### IProductItem
-Содержит информацию о товаре:
+**Методы:**
 
-* id: string — уникальный идентификатор товара
+- `on` — для подписки на событие
+- `off` — для отписки от события
+- `emit` — уведомляет подписчиков о наступлении события
+- `onAll` — для подписки на все события
+- `offAll` — сбрасывает всех подписчиков
+- `trigger` — генерирует событие с заданными аргументами. Позволяет передавать его как обработчик в другие классы без прямой зависимости от EventEmitter
 
-* description: string — описание товара
+## Описание классов Model
 
-* image: string — путь до изображения товара
+### Класс CartModel
 
-* title: string — название товара
+**Методы:**
 
-* category: string — категория товара
+- `addProduct` - Добавление товара в корзину
+- `removeProduct` - Удаление товара из корзины
+- `clearCart` - Очистка корзины
+- `isInCart` - Проверка, есть ли товар в корзине
+- `getProducts` - Получение списка товаров в корзине
+- `getTotal` - Получение общей суммы товаров в корзине
+- `get count` - Получение количества товаров в корзине
+- `validateCart` - Проверка корзины на предмет наличия цены у всей корзины
 
-* price: number — цена товара
+### Класс GalleryModel
 
-#### IOrder
-Содержит информацию о заказе:
+**Методы:**
 
-* id: string — уникальный идентификатор заказа
+- `getItem` - Получение конкретного товара по id
+- `getItems` - Получение списка товаров
+- `addItem` - Добавление товара в галерею
+- `addItems` - Добавление списка товаров в галерею
 
-* total: number — общая сумма заказа
+### Класс OrderModel
 
-#### ICard
-Содержит информацию о карточке товара:
+**Методы:**
 
-* product: IProductItem — товар, отображаемый в карточке
+- `fillOrder` - Заполнение заказа (тип оплаты и адрес)
+- `addContacts` - Добавление контактной информации
+- `clearOrder` - Очистка заказа
+- `static validateAddress` - Проверка адреса на корректность
+- `static validatePayment` - Проверка типа оплаты на корректность
+- `static validateEmail` - Проверка email на корректность
+- `static validatePhone` - Проверка телефона на корректность
+- `static makeApiOrderObj` - Создание объекта для API с данными заказа
 
-### Компоненты
-#### IGallery
-Компонент для отображения списка товаров:
+## Описание класса ProductApi
 
-* cardList: ICard[] — список карточек товаров
+Этот класс предназначен для взаимодействия с API. Он предоставляет методы для получения и отправки данных. В нем примуствует поля класса Api(Dependency injection)
 
-* addCard(card: ICard): void — добавляет карточку в список
+**Методы:**
 
-* addCardList(cardList: ICard[]): void — добавляет список карточек
+- `getProducts` - Получение списка товаров из API
+- `postOrder` - Отправка заказа на сервер
 
-* deleteCard(cardId: string): void — удаляет карточку по ID
+## Описание классов View
 
-* render(): void — отрисовывает компонент
+### Класс Card
 
-#### ICart
-Компонент корзины:
+**Методы:**
 
-* productList: IProductItem[] — список товаров в корзине
+- `set id` - Установка id товара (не виден пользователю)
+- `set image` - Установка изображения товара 
+- `set title` - Установка названия товара
+- `set category` - Установка категории товара
+- `set price` - Установка цены товара
 
-* total: number — общая стоимость товаров в корзине
+### Класс CartPrevew
 
-* addToCart(product: IProductItem): void — добавляет товар в корзину
+**Методы:**
 
-* deleteFromCart(product: IProductItem): void — удаляет товар из корзины
+- `set id` - Установка id товара (не виден пользователю)
+- `set image` - Установка изображения товара 
+- `set title` - Установка названия товара
+- `set category` - Установка категории товара
+- `set price` - Установка цены товара
+- `set description` - Установка описания товара
+- `toggleButton` - Переключение кнопки добавления в корзину (активная / не активная)
 
-* render(): void — отрисовывает компонент
+### Класс FormContacts
 
-#### IPayment
-Компонент оплаты:
+**Методы:**
+- `set email` - Установка email
+- `set phone` - Установка телефона
+- `set buttonState` - Установка состояния кнопки (активная / не активная)
 
-* paymentType: paymentType — тип оплаты ("онлайн" или "при получении")
+### Класс FormOrder
 
-* address: string — адрес доставки
+**Методы:**
 
-* email: string — email покупателя
+- `set payment` - Установка типа оплаты
+- `set email` - Установка email
+- `set buttonState` - Установка состояния кнопки (активная / не активная)
 
-* phone: string — телефон покупателя
+### Класс Modal
 
-* SubmitPayment(): IOrder — отправляет данные оплаты и возвращает заказ
+**Методы:**
 
-### Управление модальными окнами
-#### ModalManager
-Управляет открытием модальных окон:
+- `set content` - Установка содержимого модального окна
+- `open` - Открытие модального окна
+- `close` - Закрытие модального окна
 
-* openCardModel(cardId: string): void — открывает модальное окно карточки товара
+### Класс Page
 
-* openBasketModal(): void — открывает модальное окно корзины
+**Методы:**
 
-* openPaymentModal(): void — открывает модальное окно оплаты
+- `set gallery` - Установка галереи товаров
+- `set cartTotal` - Установка общей суммы товаров в корзине
 
-### Работа с API
-#### IApiClient
-Обеспечивает взаимодействие с API:
+### Класс ShoppingCart
 
-* api: Api — экземпляр API-клиента
+**Методы:**
 
-* getProduct(): IProductItem — получает информацию о товаре
+- `set products` - Установка товаров в корзине
+- `set total` - Установка общей суммы товаров в корзине
+- `toggleButton` - Переключение кнопки добавления в корзину (активная / не активная)
 
-* getProductList(): IProductItem[] — получает список товаров
+### Класс ShoppingCartProduct
 
-* postOrder(order: IOrder): void — отправляет заказ на сервер
+**Методы:**
+
+- `static cleanIndex` - Очистка индекса товара в корзине
+- `set id` - Установка id товара
+- `set title` - Установка названия товара
+- `set price` - Установка цены товара
+
+### Класс Success
+
+**Методы:**
+- `set total` - Установка общей суммы товаров

@@ -7,19 +7,9 @@ export interface IProductItem
   category: string;
   price: number;
 }
-
 export enum PaymentType {
-  "Онлайн",
-  "При получении"
-}
-
-export interface IOrder {
-  payment: PaymentType,
-  email: string,
-  phone: string,
-  address: string,
-  total: number,
-  items: string[]
+  "Онлайн" = "Онлайн",
+  "При получении" ="При получении"
 }
 
 export interface IOrderResponse {
@@ -28,11 +18,11 @@ export interface IOrderResponse {
 }
 
 export interface IPage {
-  gallery: IProductItem[];
+  gallery: HTMLElement[];
   cartTotal: number;  
 }
 
 export interface IShoppingCart {
-  products: IProductItem[];
+  products: HTMLElement[];
   total: number;
 }
