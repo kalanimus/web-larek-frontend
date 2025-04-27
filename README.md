@@ -151,6 +151,7 @@ yarn build
 - `set email` - Установка email
 - `set phone` - Установка телефона
 - `set buttonState` - Установка состояния кнопки (активная / не активная)
+- `cleanForm` - Отчистка формы
 
 ### Класс FormOrder
 
@@ -159,6 +160,8 @@ yarn build
 - `set payment` - Установка типа оплаты
 - `set email` - Установка email
 - `set buttonState` - Установка состояния кнопки (активная / не активная)
+- `updatePaymentButtons` - Обновление кнопок оплаты (активная / не активная)
+- `cleanForm` - Отчистка формы
 
 ### Класс Modal
 

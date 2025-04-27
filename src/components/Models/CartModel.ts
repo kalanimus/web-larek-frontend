@@ -27,6 +27,7 @@ export class CartModel {
   clearCart(){
     this.productList = [];
     this.total = 0;
+    this.events.emit('cart:updated');
   }
 
   isInCart(id: string): boolean{

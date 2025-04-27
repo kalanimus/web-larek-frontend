@@ -63,7 +63,6 @@ const success = new Success(cloneTemplate(successTemplate), events)
 
 productApi.getProducts()
 .then((response) =>{
-    console.log(response);
     gallery.addItems(response.items.map(item => ({...item, image: CDN_URL + item.image})));
 })
 
@@ -105,7 +104,6 @@ events.on('cart:click', ()=>{
     });
 
     modal.render({content: shoppingCartHTML});
-    console.log(cart.validateCart())
     if(cart.validateCart()){
         shoppingCart.toggleButton(true)
     } else {
@@ -142,7 +140,6 @@ events.on('form:next', ({payment, address}: {payment: PaymentType, address: stri
     order.fillOrder(payment, address);
     const contactsFormHTML = contactsForm.render();
     modal.render({content: contactsFormHTML});
-    console.log(order);
 })
 
 events.on('formOrder:input_changed', ({address, payment}: {address: string, payment: PaymentType}) => {
@@ -162,7 +159,6 @@ events.on('validationContacts:incorrect', ()=>{
 })
 
 events.on('formContacts:input_changed', ({email, phone}: {email: string, phone: string}) => {
-    console.log(OrderModel.validateEmail(email) && OrderModel.validatePhone(phone))
     if (OrderModel.validateEmail(email) && OrderModel.validatePhone(phone)){
         events.emit('validationContacts:correct')
     } else {
@@ -172,14 +168,18 @@ events.on('formContacts:input_changed', ({email, phone}: {email: string, phone: 
 
 events.on('form:submit', ({email, phone}: {email: string, phone: string}) => {
     order.addContacts(phone, email);
-    const successHTML = success.render({total: cart.getTotal()});
-    modal.render({content: successHTML});
+    
     productApi.postOrder(OrderModel.makeApiOrderObj(order, cart.getProducts().filter(product => product.price != null).map(product => product.id),cart.getTotal()))
         .then((response) => {
-            console.log(response);
-            modal.close();
-            cart.clearCart();
+            const successHTML = success.render({total: cart.getTotal()});
+            modal.render({content: successHTML});cart.clearCart();
             order.clearOrder();
+            orderForm.cleanForm();
+            contactsForm.cleanForm();
         })
 
+})
+
+events.on('closeSuccess', () => {
+    modal.close();
 })

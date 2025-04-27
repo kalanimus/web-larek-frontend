@@ -28,4 +28,8 @@ export class Page extends Component<IPage>{
   set cartTotal(total: number){
     this.setText(this.cartTotalElement, total)
   }
+
+  public toggleLockPage(){
+    this.container.classList.toggle('page__wrapper_locked')
+  }
 }

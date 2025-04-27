@@ -46,4 +46,10 @@ export class FormContacts extends Component<IFormContacts>{
   set buttonState(value: boolean){
     this.submitButton.disabled = !value;
   }
+
+  public cleanForm(){
+    this.email = '';
+    this.phone = '';
+    this.buttonState = false;
+  }
 }
