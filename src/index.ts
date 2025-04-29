@@ -14,36 +14,16 @@ import { ShoppingCart } from './components/View/ShoppingCart';
 import { ShoppingCartProduct } from './components/View/ShoppingCartProduct';
 import { Success } from './components/View/Success';
 import './scss/styles.scss';
-import { IProductItem, PaymentType } from './types';
+import { PaymentType } from './types';
 import { API_URL, CDN_URL } from './utils/constants';
 import { cloneTemplate } from './utils/utils';
-
-const testCards: IProductItem[] = [
-        {
-            id: "854cef69-976d-4c2a-a18c-2aa45046c390",
-            description: "Если планируете решать задачи в тренажёре, берите два.",
-            image: "https://i.ytimg.com/vi/flwOhlqAkck/maxresdefault.jpg",
-            title: "+1 час в сутках",
-            category: "софт-скил",
-            price: 750
-        },
-        {
-            id: "c101ab44-ed99-4a54-990d-47aa2bb4e7d9",
-            description: "Лизните этот леденец, чтобы мгновенно запоминать и узнавать любой цветовой код CSS.",
-            image: "https://i.pinimg.com/originals/da/aa/3e/daaa3ef9a33e5039b74b51d86d29b7a9.png",
-            title: "HEX-леденец",
-            category: "другое",
-            price: 1450
-        }
-    ];
 
 const events = new EventEmitter();
 const gallery = new GalleryModel(events);
 const cart = new CartModel(events);
-const order = new OrderModel();
+const order = new OrderModel(events);
 const productApi = new ProductApi(new Api(API_URL));
 
-const galleryList = document.querySelector('.gallery') as HTMLUListElement;
 const page = new Page(document.querySelector('.page__wrapper') as HTMLElement, events);
 const modal = new Modal(document.querySelector('.modal') as HTMLElement, events);
 
@@ -104,11 +84,7 @@ events.on('cart:click', ()=>{
     });
 
     modal.render({content: shoppingCartHTML});
-    if(cart.validateCart()){
-        shoppingCart.toggleButton(true)
-    } else {
-        shoppingCart.toggleButton(false)
-    }
+    shoppingCart.toggleButton(cart.validateCart())
     modal.open();
 })
 
@@ -119,6 +95,8 @@ events.on('cart_product:delete', ({id}: {id: string}) => {
         products: cart.getProducts().map(product => new ShoppingCartProduct(cloneTemplate(cartProductTemplate), events).render(product)),
         total: cart.getTotal()
     });
+
+    shoppingCart.toggleButton(cart.validateCart())
 
     modal.render({content: shoppingCartHTML});
 })
@@ -132,8 +110,9 @@ events.on('validationOrder:correct', ()=>{
     orderForm.buttonState = true;
 })
 
-events.on('validationOrder:incorrect', ()=>{
+events.on('validationOrder:incorrect', ({error} : {error: string})=>{
     orderForm.buttonState = false;
+    alert(error);
 })
 
 events.on('form:next', ({payment, address}: {payment: PaymentType, address: string}) => {
@@ -143,28 +122,22 @@ events.on('form:next', ({payment, address}: {payment: PaymentType, address: stri
 })
 
 events.on('formOrder:input_changed', ({address, payment}: {address: string, payment: PaymentType}) => {
-    if (OrderModel.validateAddress(address) && OrderModel.validatePayment(payment)){
-        events.emit('validationOrder:correct')
-    } else {
-        events.emit('validationOrder:incorrect')
-    }
+    order.validateOrderForm(address, payment);
 })
 
 events.on('validationContacts:correct', ()=>{
     contactsForm.buttonState = true;
 })
 
-events.on('validationContacts:incorrect', ()=>{
+events.on('validationContacts:incorrect', ({error} : {error: string})=>{
     contactsForm.buttonState = false;
+    alert(error);
 })
 
 events.on('formContacts:input_changed', ({email, phone}: {email: string, phone: string}) => {
-    if (OrderModel.validateEmail(email) && OrderModel.validatePhone(phone)){
-        events.emit('validationContacts:correct')
-    } else {
-        events.emit('validationContacts:incorrect')
-    }
-})
+    order.validateContactsForm(email, phone);
+    
+  })
 
 events.on('form:submit', ({email, phone}: {email: string, phone: string}) => {
     order.addContacts(phone, email);

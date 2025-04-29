@@ -26,11 +26,11 @@ export class FormContacts extends Component<IFormContacts>{
       events.emit('form:submit', {email: this.emailInput.value, phone: this.phoneInput.value});
     })
     
-    this.emailInput.addEventListener('input', () => {
+    this.emailInput.addEventListener('blur', () => {
       events.emit('formContacts:input_changed', {email: this.emailInput.value, phone: this.phoneInput.value});
     })
 
-    this.phoneInput.addEventListener('input', () => {
+    this.phoneInput.addEventListener('blur', () => {
       events.emit('formContacts:input_changed', {email: this.emailInput.value, phone: this.phoneInput.value});
     })
   }

@@ -62,10 +62,7 @@ export class CardPreview extends Component<IProductItem> {
   }
 
   set price(value: number){
-    if(value)
-      this.setText(this.cardPrice, `${value} синапсов`);
-    else
-      this.setText(this.cardPrice, 'Бесценно');
+    value? this.setText(this.cardPrice, `${value} синапсов`): this.setText(this.cardPrice, 'Бесценно');
   }
 
   set description(value:string) {
@@ -73,11 +70,7 @@ export class CardPreview extends Component<IProductItem> {
   }
 
   toggleButton(value: boolean){
-    if(!value){
-      this.setText(this.buyButton, 'Купить');
-    } else {
-      this.setText(this.buyButton, 'Уже в корзине');
-    }
+    !value? this.setText(this.buyButton, 'Купить') : this.setText(this.buyButton, 'Уже в корзине');
     this.buyButton.disabled = value;
   }
 }

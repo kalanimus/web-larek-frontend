@@ -34,11 +34,11 @@ export class FormOrder extends Component<IFormOrder> {
       const button = (event.target) as HTMLButtonElement;
       if (button.classList.contains('button_alt')) {
         this.payment = ((event.target) as HTMLButtonElement).textContent as PaymentType;
-        events.emit('formOrder:input_changed', {address: this.addressInput.value, payment: this._payment});
+        events.emit('formOrder:payment_input_changed', {address: this.addressInput.value, payment: this._payment});
       }
     })
 
-    this.addressInput.addEventListener('input', () => {
+    this.addressInput.addEventListener('blur', () => {
       events.emit('formOrder:input_changed', {address: this.addressInput.value, payment: this._payment});
     })
   }
