@@ -77,9 +77,8 @@ events.on('cart:updated', () => {
 })
 
 events.on('cart:click', ()=>{
-    ShoppingCartProduct.cleanIndex();
     const shoppingCartHTML = shoppingCart.render({
-        products: cart.getProducts().map(product => new ShoppingCartProduct(cloneTemplate(cartProductTemplate), events).render(product)),
+        products: cart.getProducts().map((product, index) => new ShoppingCartProduct(cloneTemplate(cartProductTemplate), events, ++index).render(product)),
         total: cart.getTotal()
     });
 
@@ -89,10 +88,9 @@ events.on('cart:click', ()=>{
 })
 
 events.on('cart_product:delete', ({id}: {id: string}) => {
-    ShoppingCartProduct.cleanIndex();
     cart.removeProduct(id);
     const shoppingCartHTML = shoppingCart.render({
-        products: cart.getProducts().map(product => new ShoppingCartProduct(cloneTemplate(cartProductTemplate), events).render(product)),
+        products: cart.getProducts().map((product, index) => new ShoppingCartProduct(cloneTemplate(cartProductTemplate), events, ++index).render(product)),
         total: cart.getTotal()
     });
 

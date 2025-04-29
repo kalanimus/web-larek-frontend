@@ -10,23 +10,18 @@ export class ShoppingCartProduct extends Component<IProductItem> {
   protected productId: string;
   protected static index: number = 0;
 
-  constructor(container: HTMLLIElement, protected events: IEvents){
+  constructor(container: HTMLLIElement, protected events: IEvents, index: number){
     super(container);
     this.productTitle = this.container.querySelector('.card__title') as HTMLElement;
     this.productPrice = this.container.querySelector('.card__price') as HTMLElement;
     this.deleteButton = this.container.querySelector('.basket__item-delete') as HTMLButtonElement;
     this.productIndex = this.container.querySelector('.basket__item-index') as HTMLElement;
-    
-    ShoppingCartProduct.index++;
-    this.setText(this.productIndex, ShoppingCartProduct.index);
+
+    this.setText(this.productIndex, index);
     
     this.deleteButton.addEventListener('click', () => {
       this.events.emit('cart_product:delete', {id: this.productId})
     })
-  }
-
-  static cleanIndex(){
-    ShoppingCartProduct.index = 0;
   }
 
   set id(value: string){
